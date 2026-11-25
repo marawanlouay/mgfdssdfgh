@@ -1,0 +1,5 @@
+{
+  "name":"chessnest","version":"1.0.0","private":true,"type":"module",
+  "scripts":{"dev":"node --watch api/index.js","start":"node api/index.js","check":"node --check api/index.js && node --check src/routes/matches.js && node --check src/routes/auth.js && node --check src/routes/extra-routes.js"},
+  "dependencies":{"bcryptjs":"^2.4.3","chess.js":"^1.4.0","cookie-parser":"^1.4.7","dotenv":"^16.4.7","express":"^4.21.2","jsonwebtoken":"^9.0.2","pg":"^8.13.1"},"engines":{"node":">=20"}
+}
