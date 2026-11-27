@@ -23,4 +23,5 @@ router.post('/:id/moves',...auth,async(req,res)=>{
  await client.query('UPDATE public.matches SET current_fen=$2,current_turn=$3,status=$4::varchar,result=$5,ended_at=CASE WHEN $4::text=\'completed\' THEN NOW() ELSE NULL END WHERE id=$1',[match.id,board.fen(),board.turn()==='w'?'white':'black',status,result]);await client.query('COMMIT');res.json({move:move.san,fen:board.fen(),status,result});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error(e);fail(res,500,'Unable to save move.');}finally{client.release();}
 });
+router.post('/:id/resign',...auth,async(req,res)=>{if(!UUID.test(req.params.id))return fail(res,400,'Invalid match ID.');try{const r=await pool.query("UPDATE public.matches SET status='completed',result=CASE WHEN white_player_id=$2 THEN 'black' ELSE 'white' END,ended_at=NOW() WHERE id=$1 AND game_type='online' AND status='active' AND (white_player_id=$2 OR black_player_id=$2) RETURNING *",[req.params.id,req.user.id]);if(!r.rows.length)return fail(res,409,'Match cannot be resigned.');res.json({match:r.rows[0]});}catch(e){console.error(e);fail(res,500,'Unable to resign.');}});
 export default router;
