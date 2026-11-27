@@ -19,7 +19,7 @@ router.post('/:id/moves',...auth,async(req,res)=>{
  if(!move){await client.query('ROLLBACK');return fail(res,400,'Illegal move.');}
  const count=await client.query('SELECT COALESCE(MAX(move_number),0)+1 AS next FROM public.moves WHERE match_id=$1',[match.id]);await client.query('INSERT INTO public.moves (match_id,player_id,move_number,move_notation,board_state) VALUES ($1,$2,$3,$4,$5)',[match.id,req.user.id,count.rows[0].next,move.san,board.fen()]);
  const status=board.isGameOver()?'completed':'active';const result=board.isCheckmate()?(color==='w'?'white':'black'):board.isGameOver()?'draw':null;
- await client.query('UPDATE public.matches SET current_fen=$2,current_turn=$3,status=$4,result=$5,ended_at=CASE WHEN $4=\'completed\' THEN NOW() ELSE NULL END WHERE id=$1',[match.id,board.fen(),board.turn()==='w'?'white':'black',status,result]);await client.query('COMMIT');res.json({move:move.san,fen:board.fen(),status,result});
+ await client.query('UPDATE public.matches SET current_fen=$2,current_turn=$3,status=$4::varchar,result=$5,ended_at=CASE WHEN $4::text=\'completed\' THEN NOW() ELSE NULL END WHERE id=$1',[match.id,board.fen(),board.turn()==='w'?'white':'black',status,result]);await client.query('COMMIT');res.json({move:move.san,fen:board.fen(),status,result});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error(e);fail(res,500,'Unable to save move.');}finally{client.release();}
 });
 export default router;
